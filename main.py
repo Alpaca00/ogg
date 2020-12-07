@@ -1,15 +1,18 @@
 import sys, os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, QTimer
 import random
 from pygame import mixer
+from mutagen.mp3 import MP3
+import time
 
 musicList = []
 mixer.init()
-#index = 0
 muted = False
 currentVolume = 0
+soundLength = 0
+count = 0
 
 class Player(QWidget):
     def __init__(self):
@@ -26,6 +29,11 @@ class Player(QWidget):
     def widgets(self):
         ########ProgressBar####################
         self.progressBar = QProgressBar()
+        self.progressBar.setTextVisible(False)
+        ##########LABEL########################
+        self.songTimmerLabel = QLabel('00:00')
+        self.songLengthLabel = QLabel('00:00')
+        self.songLengthLabel.setStyleSheet('color:red;')
         ###########Buttons#####################
         self.addButton = QToolButton()
         self.addButton.setIcon(QIcon('icons/add.png'))
@@ -75,6 +83,12 @@ class Player(QWidget):
         self.playList = QListWidget()
         self.playList.setStyleSheet('background-color:#2C3E50;font:Times 14; color:white;')
         self.playList.doubleClicked.connect(self.playSounds)
+        ##############TIMER##################################
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.progressBarUpdate)
+
+
 
     def layouts(self):
         ############Creating Layouts#########################
@@ -88,6 +102,8 @@ class Player(QWidget):
         ############Adding Widgets############################
         ###########Top Layout Widgets#########################
         self.topLayout.addWidget(self.progressBar)
+        self.topLayout.addWidget(self.songTimmerLabel)
+        self.topLayout.addWidget(self.songLengthLabel)
         ###########MiddleLayout Widget########################
         self.middleLayout.addStretch()
         self.middleLayout.addWidget(self.addButton)
@@ -122,19 +138,38 @@ class Player(QWidget):
             fileName = os.path.basename(song)
             self.playList.addItem(fileName)
 
+
     def playSounds(self):
-        #global index
+        global soundLength
+        global count
+        count = 0
         index = self.playList.currentRow()
         try:
             mixer.music.load(str(musicList[index]))
             mixer.music.play()
+            self.timer.start()
+            sound = MP3(str(musicList[index]))
+            soundLength = sound.info.length
+            soundLength = round(soundLength)
+            self.progressBar.setMaximum(soundLength)
+            self.progressBar.setValue(count)
+            equivalent = (round(soundLength/60, 2))
+            self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
             #index += 1
             #mixer.music.queue(str(musicList[index]))
         except:
-            pass
-        #print(index)
-        #fileName = os.path.basename(musicList[index])
-        #print(fileName, type(fileName))
+            QMessageBox.information(self,'Warning', 'Somethimg wrong here!')
+
+    def progressBarUpdate(self):
+        global count
+        global soundLength
+        count += 1
+        self.progressBar.setValue(count)
+        self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
+        if count == soundLength:
+            self.timer.stop()
+
+
 
 
     def setVolume(self):
@@ -149,23 +184,25 @@ class Player(QWidget):
             mixer.music.set_volume(0.0)
             muted = True
             self.volumeSlider.setValue(0)
-            print(currentVolume)
+            self.muteButton.setIcon(QIcon('icons/mute.png'))
+            self.muteButton.setIconSize(QSize(24, 24))
+            self.muteButton.setToolTip('Mute')
 
         else:
             mixer.music.set_volume(currentVolume/100)
             self.volumeSlider.setValue(currentVolume)
             muted = False
+            self.muteButton.setIcon(QIcon('icons/volume.png'))
+            self.muteButton.setIconSize(QSize(24, 24))
+            self.muteButton.setToolTip('Unmute')
 
     def previousSound(self):
         index = self.playList.currentRow()
-        try:
-            mixer.music.load(str(musicList[index]))
-            mixer.music.play()
-            index -= 2
-            mixer.music.queue(str(musicList[index]))
-        except:
-            pass
-        
+        mixer.music.load(musicList[index])
+        index -= 1
+        mixer.music.play(index)
+
+
 def main():
     APP = QApplication(sys.argv)
     window = Player()
