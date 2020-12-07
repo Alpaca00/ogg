@@ -155,8 +155,6 @@ class Player(QWidget):
             self.progressBar.setValue(count)
             equivalent = (round(soundLength/60, 2))
             self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
-            #index += 1
-            #mixer.music.queue(str(musicList[index]))
         except:
             QMessageBox.information(self,'Warning', 'Somethimg wrong here!')
 
@@ -168,8 +166,6 @@ class Player(QWidget):
         self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
         if count == soundLength:
             self.timer.stop()
-
-
 
 
     def setVolume(self):
