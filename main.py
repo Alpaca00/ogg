@@ -7,18 +7,24 @@ from pygame import mixer
 from mutagen.mp3 import MP3
 import time
 
+
+
 musicList = []
 mixer.init()
 muted = False
 currentVolume = 0
 soundLength = 0
 count = 0
+index = 0
+paused = False
+pauseValue = 0
+pauseProgressBar = False
 
 class Player(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Music Player')
-        self.setGeometry(520, 150, 320, 550)
+        self.setGeometry(520, 150, 360, 550)
         self.UI()
         self.show()
 
@@ -30,6 +36,7 @@ class Player(QWidget):
         ########ProgressBar####################
         self.progressBar = QProgressBar()
         self.progressBar.setTextVisible(False)
+        self.progressBar.setStyleSheet('border: 2px solid grey; border - radius: 5px; color:#05B8CC; width: 20px;')
         ##########LABEL########################
         self.songTimmerLabel = QLabel('00:00')
         self.songLengthLabel = QLabel('00:00')
@@ -53,6 +60,12 @@ class Player(QWidget):
         self.previousButton.setToolTip('Play Previous')
         self.previousButton.clicked.connect(self.previousSound)
 
+        self.pauseButton = QPushButton()
+        self.pauseButton.setIcon(QIcon('icons/pause.png'))
+        self.pauseButton.setIconSize(QSize(24, 24))
+        self.pauseButton.setToolTip('Pause')
+        self.pauseButton.clicked.connect(self.pauseSounds)
+
         self.playButton = QToolButton()
         self.playButton.setIcon(QIcon('icons/play.png'))
         self.playButton.setIconSize(QSize(24, 24))
@@ -63,6 +76,7 @@ class Player(QWidget):
         self.nextButton.setIcon(QIcon('icons/next.png'))
         self.nextButton.setIconSize(QSize(24, 24))
         self.nextButton.setToolTip('Play Next')
+        self.nextButton.clicked.connect(self.nextSounds)
 
         self.muteButton = QToolButton()
         self.muteButton.setIcon(QIcon('icons/mute.png'))
@@ -109,6 +123,7 @@ class Player(QWidget):
         self.middleLayout.addWidget(self.addButton)
         self.middleLayout.addWidget(self.shuffleButton)
         self.middleLayout.addWidget(self.playButton)
+        self.middleLayout.addWidget(self.pauseButton)
         self.middleLayout.addWidget(self.previousButton)
         self.middleLayout.addWidget(self.nextButton)
         self.middleLayout.addWidget(self.volumeSlider)
@@ -142,6 +157,7 @@ class Player(QWidget):
     def playSounds(self):
         global soundLength
         global count
+        global index
         count = 0
         index = self.playList.currentRow()
         try:
@@ -153,19 +169,48 @@ class Player(QWidget):
             soundLength = round(soundLength)
             self.progressBar.setMaximum(soundLength)
             self.progressBar.setValue(count)
-            equivalent = (round(soundLength/60, 2))
+            equivalent = round(soundLength/60, 2)
             self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
         except:
             QMessageBox.information(self,'Warning', 'Somethimg wrong here!')
 
+    def pauseSounds(self):
+        global paused
+        global pauseValue
+        try:
+            if paused == False:
+                mixer.music.pause()
+                paused = True
+                pauseValue = self.progressBar.value()
+                print('ProgerssBar:', pauseValue)
+                self.timer.stop()
+            else:
+                mixer.music.unpause()
+                paused = False
+                pauseProgressBar = True
+                self.timer.start()
+        except:
+            QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
+
     def progressBarUpdate(self):
         global count
         global soundLength
+        global pauseProgressBar
+        global pauseValue
         count += 1
-        self.progressBar.setValue(count)
-        self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
-        if count == soundLength:
-            self.timer.stop()
+        print('UP',count)
+        if pauseProgressBar == False:
+            self.progressBar.setValue(count)
+            self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
+            if count == soundLength:
+                self.timer.stop()
+
+        if count == pauseValue:
+            count = pauseValue
+            print(count)
+            self.progressBar.setValue(count)
+            self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
+
 
 
     def setVolume(self):
@@ -193,11 +238,50 @@ class Player(QWidget):
             self.muteButton.setToolTip('Unmute')
 
     def previousSound(self):
-        index = self.playList.currentRow()
-        mixer.music.load(musicList[index])
+        global soundLength
+        global count
+        global index
+        count = 0
+        items = self.playList.count()
+        if index == 0:
+            index = items
         index -= 1
-        mixer.music.play(index)
+        try:
+            mixer.music.load(str(musicList[index]))
+            mixer.music.play()
+            self.timer.start()
+            sound = MP3(str(musicList[index]))
+            soundLength = sound.info.length
+            soundLength = round(soundLength)
+            self.progressBar.setMaximum(soundLength)
+            self.progressBar.setValue(count)
+            equivalent = round(soundLength / 60, 2)
+            self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+        except:
+            QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
 
+    def nextSounds(self):
+        global soundLength
+        global count
+        global index
+        count = 0
+        items = self.playList.count()
+        index += 1
+        if index == items :
+            index = 0
+        try:
+            mixer.music.load(str(musicList[index]))
+            mixer.music.play()
+            self.timer.start()
+            sound = MP3(str(musicList[index]))
+            soundLength = sound.info.length
+            soundLength = round(soundLength)
+            self.progressBar.setMaximum(soundLength)
+            self.progressBar.setValue(count)
+            equivalent = round(soundLength / 60, 2)
+            self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+        except:
+            QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
 
 def main():
     APP = QApplication(sys.argv)
