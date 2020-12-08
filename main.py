@@ -37,6 +37,7 @@ class Player(QWidget):
         self.progressBar = QProgressBar()
         self.progressBar.setTextVisible(False)
         self.progressBar.setStyleSheet('border: 2px solid grey; border - radius: 5px; color:#05B8CC; width: 20px;')
+        self.progressBar.setToolTip('ProgressBar')
         ##########LABEL########################
         self.songTimmerLabel = QLabel('00:00')
         self.songLengthLabel = QLabel('00:00')
@@ -171,6 +172,7 @@ class Player(QWidget):
             self.progressBar.setValue(count)
             equivalent = round(soundLength/60, 2)
             self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+            self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
             QMessageBox.information(self,'Warning', 'Somethimg wrong here!')
 
@@ -198,7 +200,6 @@ class Player(QWidget):
         global pauseProgressBar
         global pauseValue
         count += 1
-        print('UP',count)
         if pauseProgressBar == False:
             self.progressBar.setValue(count)
             self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
@@ -207,10 +208,10 @@ class Player(QWidget):
 
         if count == pauseValue:
             count = pauseValue
-            print(count)
             self.progressBar.setValue(count)
             self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
 
+        self.progressBar.setToolTip(time.strftime('%M:%S', time.gmtime(count)))
 
 
     def setVolume(self):
@@ -257,6 +258,7 @@ class Player(QWidget):
             self.progressBar.setValue(count)
             equivalent = round(soundLength / 60, 2)
             self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+            self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
             QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
 
@@ -280,6 +282,7 @@ class Player(QWidget):
             self.progressBar.setValue(count)
             equivalent = round(soundLength / 60, 2)
             self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+            self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
             QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
 
