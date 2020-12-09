@@ -6,8 +6,7 @@ import random
 from pygame import mixer
 from mutagen.mp3 import MP3
 import time
-
-
+import style
 
 musicList = []
 mixer.init()
@@ -36,12 +35,11 @@ class Player(QWidget):
         ########ProgressBar####################
         self.progressBar = QProgressBar()
         self.progressBar.setTextVisible(False)
-        self.progressBar.setStyleSheet('border: 2px solid grey; border - radius: 5px; color:#05B8CC; width: 20px;')
-        self.progressBar.setToolTip('ProgressBar')
+        self.progressBar.setStyleSheet(style.progressBarStyle())
+        #self.progressBar.setToolTip('ProgressBar')
         ##########LABEL########################
         self.songTimmerLabel = QLabel('00:00')
         self.songLengthLabel = QLabel('00:00')
-        self.songLengthLabel.setStyleSheet('color:red;')
         ###########Buttons#####################
         self.addButton = QToolButton()
         self.addButton.setIcon(QIcon('icons/add.png'))
@@ -87,6 +85,7 @@ class Player(QWidget):
 
         ##########Volume Slider##############################
         self.volumeSlider = QSlider(Qt.Horizontal)
+        self.volumeSlider.setStyleSheet(style.sliderStyle())
         self.volumeSlider.setToolTip('Volume')
         self.volumeSlider.setValue(70)
         self.volumeSlider.setMinimum(0)
@@ -96,7 +95,7 @@ class Player(QWidget):
 
         ###########Play List################################
         self.playList = QListWidget()
-        self.playList.setStyleSheet('background-color:#2C3E50;font:Times 14; color:white;')
+        self.playList.setStyleSheet(style.listBoxStyle())
         self.playList.doubleClicked.connect(self.playSounds)
         ##############TIMER##################################
         self.timer = QTimer()
@@ -110,7 +109,7 @@ class Player(QWidget):
         self.mainLayout = QVBoxLayout()
         self.topMainLayaout = QVBoxLayout()
         self.topGroupLayaout = QGroupBox('Music Player') # Widget
-        self.topGroupLayaout.setStyleSheet('background-color:#D0ECE7;')
+        self.topGroupLayaout.setStyleSheet(style.groupBoxStyle())
         self.topLayout = QHBoxLayout()
         self.middleLayout = QHBoxLayout()
         self.bottomLayout = QVBoxLayout()
@@ -171,7 +170,7 @@ class Player(QWidget):
             self.progressBar.setMaximum(soundLength)
             self.progressBar.setValue(count)
             equivalent = round(soundLength/60, 2)
-            self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+            self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
             QMessageBox.information(self,'Warning', 'Somethimg wrong here!')
@@ -210,8 +209,9 @@ class Player(QWidget):
             count = pauseValue
             self.progressBar.setValue(count)
             self.songTimmerLabel.setText(time.strftime('%M:%S', time.gmtime(count)))
-
         self.progressBar.setToolTip(time.strftime('%M:%S', time.gmtime(count)))
+
+
 
 
     def setVolume(self):
@@ -257,7 +257,7 @@ class Player(QWidget):
             self.progressBar.setMaximum(soundLength)
             self.progressBar.setValue(count)
             equivalent = round(soundLength / 60, 2)
-            self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+            self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
             QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
@@ -281,7 +281,7 @@ class Player(QWidget):
             self.progressBar.setMaximum(soundLength)
             self.progressBar.setValue(count)
             equivalent = round(soundLength / 60, 2)
-            self.songLengthLabel.setText(str(equivalent).replace('.', ':'))
+            self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
             QMessageBox.information(self, 'Warning', 'Somethimg wrong here!')
