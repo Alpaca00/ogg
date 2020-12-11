@@ -22,6 +22,7 @@ paused = False
 pauseValue = 0
 pauseProgressBar = False
 forward = False
+themes = True
 
 class Player(QWidget):
     def __init__(self):
@@ -145,6 +146,13 @@ class Player(QWidget):
 
         self.countDownLabel = QLabel('00:00')
         self.countDownLabel.setMaximumSize(QSize(28, 28))
+
+        self.themeButton = QToolButton()
+        self.themeButton.setIcon(QIcon('icons/theme.png'))
+        self.themeButton.setIconSize(QSize(24, 24))
+        self.themeButton.setToolTip('Themes')
+        self.themeButton.clicked.connect(self.themesChange)
+
         ###############QTimer for label#######################
         self.timerLabelTime = QTimer()
         self.timerLabelTime.setInterval(1000)
@@ -186,6 +194,7 @@ class Player(QWidget):
         self.bellowLayout.addWidget(self.clearListButton)
         self.bellowLayout.addStretch()
         self.bellowLayout.addStretch()
+        self.bellowLayout.addWidget(self.themeButton)
         self.bellowLayout.addWidget(self.combo)
         self.bellowLayout.addWidget(self.countDownLabel)
         self.bellowLayout.addWidget(self.timmerExitButton)
@@ -241,18 +250,18 @@ class Player(QWidget):
         index = self.playList.currentRow()
         try:
             mixer.music.load(str(musicList[index]))
-            mixer.music.play()
-            self.timer.start()
             sound = MP3(str(musicList[index]))
             soundLength = sound.info.length
             soundLength = round(soundLength)
             self.progressBar.setMaximum(soundLength)
             self.progressBar.setValue(count)
             equivalent = round(soundLength/60, 2)
+            mixer.music.play()
+            self.timer.start()
             self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
-            QMessageBox.information(self,'Warning', 'Somethimg wrong here!')
+            QMessageBox.information(self,'Warning', 'System Error')
 
     def forwardSong(self):
         global forward
@@ -287,7 +296,7 @@ class Player(QWidget):
                     self.nextFuncSong = Timer(1, self.nextSounds())
                     print(count, soundLength)
         except:
-            QMessageBox.information(self, 'Warning', 'forward!')
+            QMessageBox.information(self, 'Warning', 'System error')
 
 
     def nextSounds(self):
@@ -312,7 +321,7 @@ class Player(QWidget):
             self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
-            QMessageBox.information(self, 'Warning', 'next')
+            QMessageBox.information(self, 'Warning', 'System error')
 
     def pauseSounds(self):
         global paused
@@ -329,7 +338,7 @@ class Player(QWidget):
                 pauseProgressBar = True
                 self.timer.start()
         except:
-            QMessageBox.information(self, 'Warning', 'Pause!')
+            QMessageBox.information(self, 'Warning', 'System Error')
 
     def stopSounds(self):
         self.timer.stop()
@@ -400,7 +409,7 @@ class Player(QWidget):
             self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
-            QMessageBox.information(self, 'Warning', 'Somethimg wrong here prev!')
+            QMessageBox.information(self, 'Warning', 'System Error')
 
 
     def exit(self):
@@ -411,25 +420,35 @@ class Player(QWidget):
         value = self.combo.currentText()
         try:
             if value == '15':
-                self.t = Timer(900, self.exit)
-                self.t.start()
-                QMessageBox.information(self, 'Information', 'Music player closes after 15 minutes')
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                if mbox == QMessageBox.Yes:
+                    self.t = Timer(900, self.exit)
+                    self.t.start()
+                    QMessageBox.information(self, 'Information', 'Music player closes after 15 minutes')
             elif value == '30':
-                self.t = Timer(1800, self.exit)
-                self.t.start()
-                QMessageBox.information(self, 'Information', 'Music player closes after 30 minutes')
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                if mbox == QMessageBox.Yes:
+                    self.t = Timer(1800, self.exit)
+                    self.t.start()
+                    QMessageBox.information(self, 'Information', 'Music player closes after 30 minutes')
             elif value == '45':
-                self.t = Timer(2700, self.exit)
-                self.t.start()
-                QMessageBox.information(self, 'Information', 'Music player closes after 45 minutes')
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                if mbox == QMessageBox.Yes:
+                    self.t = Timer(2700, self.exit)
+                    self.t.start()
+                    QMessageBox.information(self, 'Information', 'Music player closes after 45 minutes')
             elif value == '60':
-                self.t = Timer(3600, self.exit)
-                self.t.start()
-                QMessageBox.information(self, 'Information', 'Music player closes after 60 minutes')
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                if mbox == QMessageBox.Yes:
+                    self.t = Timer(3600, self.exit)
+                    self.t.start()
+                    QMessageBox.information(self, 'Information', 'Music player closes after 60 minutes')
             elif value == '120':
-                self.t = Timer(7200, self.exit)
-                self.t.start()
-                QMessageBox.information(self, 'Information', 'Music player closes after 120 minutes')
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                if mbox == QMessageBox.Yes:
+                    self.t = Timer(7200, self.exit)
+                    self.t.start()
+                    QMessageBox.information(self, 'Information', 'Music player closes after 120 minutes')
         except:
             QMessageBox.warning(self, 'Warning', 'System errors')
 
@@ -437,6 +456,28 @@ class Player(QWidget):
         self.timerLabelTime.start(1000)
         current_time = datetime.now().time()
         self.countDownLabel.setText(str(current_time))
+
+    def themesChange(self):
+        global themes
+        if themes == True:
+            self.setStyleSheet('background-color:#294B6B;')
+            self.progressBar.setStyleSheet(style.progressBarStyleDark())
+            self.volumeSlider.setStyleSheet(style.sliderStyleDark())
+            self.playList.setStyleSheet(style.listBoxStyleDark())
+            self.topGroupLayaout.setStyleSheet(style.groupBoxStyleDark())
+            self.combo.setStyleSheet('color:white;')
+            self.countDownLabel.setStyleSheet('color:white;')
+            themes = False
+        else:
+            self.setStyleSheet('background-color:#D0ECE7;')
+            self.progressBar.setStyleSheet(style.progressBarStyle())
+            self.volumeSlider.setStyleSheet(style.sliderStyle())
+            self.playList.setStyleSheet(style.listBoxStyle())
+            self.topGroupLayaout.setStyleSheet(style.groupBoxStyle())
+            self.combo.setStyleSheet('color:black;')
+            self.countDownLabel.setStyleSheet('color:black;')
+            themes = True
+
 
 def main():
     app = QApplication(sys.argv)
@@ -446,9 +487,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-    #try:
-    #    sys.exit(app.exec_())
-    #except SystemExit:
-    #    app.exec_()
+
+
 
 
