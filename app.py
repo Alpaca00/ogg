@@ -1,18 +1,19 @@
 import sys
 import os
+import random
+import time
+from datetime import datetime
+from threading import Timer
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt, QTimer
-import random
-from pygame import mixer
-from mutagen.mp3 import MP3
-import time
-from datetime import datetime
 import style
-from threading import Timer
+from pygame import mixer
+import mutagen
 
-musicList = []
+
 mixer.init()
+musicList = []
 muted = False
 currentVolume = 0
 soundLength = 0
@@ -24,19 +25,19 @@ pauseProgressBar = False
 forward = False
 themes = True
 
+
 class Player(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Music Player')
-        self.setGeometry(520, 150, 360, 550)
-        self.setStyleSheet('background-color:#D0ECE7;')
-        self.UI()
+        self.setWindowTitle('Ogg Player')
+        self.setGeometry(550, 200, 360, 550)
+        self.setFixedSize(self.size())
+        self.ui()
         self.show()
 
-    def UI(self):
+    def ui(self):
         self.widgets()
         self.layouts()
-
 
     def widgets(self):
         self.progressBar = QProgressBar()
@@ -145,7 +146,7 @@ class Player(QWidget):
         self.combo.addItems(['15', '30', '45', '60', '120'])
 
         self.countDownLabel = QLabel('00:00')
-        self.countDownLabel.setMaximumSize(QSize(28, 28))
+        self.countDownLabel.setMaximumSize(QSize(36, 36))
 
         self.themeButton = QToolButton()
         self.themeButton.setIcon(QIcon('icons/theme.png'))
@@ -163,7 +164,7 @@ class Player(QWidget):
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setSpacing(1)
         self.topMainLayaout = QVBoxLayout()
-        self.topGroupLayaout = QGroupBox('Music Player') # Widget
+        self.topGroupLayaout = QGroupBox('Music Player')  # Widget
         self.topGroupLayaout.setStyleSheet(style.groupBoxStyle())
         self.topLayout = QHBoxLayout()
         self.middleLayout = QHBoxLayout()
@@ -199,13 +200,13 @@ class Player(QWidget):
         self.bellowLayout.addWidget(self.countDownLabel)
         self.bellowLayout.addWidget(self.timmerExitButton)
         self.bellowLayout.addWidget(self.exitButton)
-        self.bottomLayout.setSpacing(1)
 
+        self.bottomLayout.setSpacing(1)
 
         self.topMainLayaout.addLayout(self.topLayout)
         self.topMainLayaout.addLayout(self.middleLayout)
         self.topGroupLayaout.setLayout(self.topMainLayaout)
-        self.mainLayout.addWidget(self.topGroupLayaout) # Widget
+        self.mainLayout.addWidget(self.topGroupLayaout)  # Widget
 
         self.mainLayout.addLayout(self.bottomLayout)
         self.mainLayout.addLayout(self.bellowLayout)
@@ -213,10 +214,11 @@ class Player(QWidget):
         self.setLayout(self.mainLayout)
 
     def addSound(self):
-        directory = QFileDialog.getOpenFileName(self,'Add Sound','','Sound Files (*.mp3 *.ogg *.wav)')
+        directory = QFileDialog.getOpenFileName(self, 'Add Sound', '', 'Sound Files (*.ogg)')
         fileName = os.path.basename(directory[0])
         self.playList.addItem(fileName)
         musicList.append(directory[0])
+
 
     def deleteSongs(self):
         global musicList
@@ -227,12 +229,10 @@ class Player(QWidget):
         except:
             QMessageBox.warning(self, 'Warning', 'Not working correctly in file playback')
 
-
     def clearPlayList(self):
         global musicList
         self.playList.clear()
         musicList.clear()
-
 
     def shufflePlayList(self):
         random.shuffle(musicList)
@@ -241,8 +241,8 @@ class Player(QWidget):
             fileName = os.path.basename(song)
             self.playList.addItem(fileName)
 
-
     def playSounds(self):
+        global musicList
         global soundLength
         global count
         global index
@@ -250,18 +250,18 @@ class Player(QWidget):
         index = self.playList.currentRow()
         try:
             mixer.music.load(str(musicList[index]))
-            sound = MP3(str(musicList[index]))
+            sound = mutagen.File(str(musicList[index]))
             soundLength = sound.info.length
             soundLength = round(soundLength)
             self.progressBar.setMaximum(soundLength)
             self.progressBar.setValue(count)
-            equivalent = round(soundLength/60, 2)
+            equivalent = round(soundLength / 60, 2)
             mixer.music.play()
             self.timer.start()
             self.songLengthLabel.setText(str(equivalent).replace('.', ':').ljust(4, '0').rjust(5, '0'))
             self.topGroupLayaout.setTitle(os.path.basename(str(musicList[index])))
         except:
-            QMessageBox.information(self,'Warning', 'System Error')
+            QMessageBox.information(self, 'Warning', 'System Error')
 
     def forwardSong(self):
         global forward
@@ -282,7 +282,6 @@ class Player(QWidget):
                 count += 30
                 if count >= soundLength:
                     self.nextFuncSong = Timer(1, self.nextSounds())
-                    print(count, soundLength)
             else:
                 mixer.music.pause()
                 if count > 119:
@@ -294,9 +293,9 @@ class Player(QWidget):
                 count += 60
                 if count >= soundLength:
                     self.nextFuncSong = Timer(1, self.nextSounds())
-                    print(count, soundLength)
         except:
             QMessageBox.information(self, 'Warning', 'System error')
+
 
 
     def nextSounds(self):
@@ -306,13 +305,13 @@ class Player(QWidget):
         count = 0
         items = self.playList.count()
         index += 1
-        if index == items or index > items: # '>' if delete last song
+        if index == items or index > items:  # '>' if delete last song
             index = 0
         try:
             mixer.music.load(str(musicList[index]))
             mixer.music.play()
             self.timer.start()
-            sound = MP3(str(musicList[index]))
+            sound = mutagen.File(str(musicList[index]))
             soundLength = sound.info.length
             soundLength = round(soundLength)
             self.progressBar.setMaximum(soundLength)
@@ -366,7 +365,7 @@ class Player(QWidget):
 
     def setVolume(self):
         self.volume = self.volumeSlider.value()
-        mixer.music.set_volume(self.volume/100)
+        mixer.music.set_volume(self.volume / 100)
 
     def muteVolume(self):
         global muted
@@ -380,7 +379,7 @@ class Player(QWidget):
             self.muteButton.setIconSize(QSize(24, 24))
             self.muteButton.setToolTip('Mute')
         else:
-            mixer.music.set_volume(currentVolume/100)
+            mixer.music.set_volume(currentVolume / 100)
             self.volumeSlider.setValue(currentVolume)
             muted = False
             self.muteButton.setIcon(QIcon('icons/volume.png'))
@@ -400,7 +399,7 @@ class Player(QWidget):
             mixer.music.load(str(musicList[index]))
             mixer.music.play()
             self.timer.start()
-            sound = MP3(str(musicList[index]))
+            sound = mutagen.File(str(musicList[index]))
             soundLength = sound.info.length
             soundLength = round(soundLength)
             self.progressBar.setMaximum(soundLength)
@@ -411,43 +410,49 @@ class Player(QWidget):
         except:
             QMessageBox.information(self, 'Warning', 'System Error')
 
-
     def exit(self):
+        global timerStart
         self.close()
-        self.t.cancel()
+        timerStart.cancel()
 
     def exitTimmer(self):
+        global timerStart
         value = self.combo.currentText()
         try:
             if value == '15':
-                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',
+                                            QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
                 if mbox == QMessageBox.Yes:
-                    self.t = Timer(900, self.exit)
-                    self.t.start()
+                    timerStart = Timer(900, self.exit)
+                    timerStart.start()
                     QMessageBox.information(self, 'Information', 'Music player closes after 15 minutes')
             elif value == '30':
-                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',
+                                            QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
                 if mbox == QMessageBox.Yes:
-                    self.t = Timer(1800, self.exit)
-                    self.t.start()
+                    timerStart = Timer(1800, self.exit)
+                    timerStart.start()
                     QMessageBox.information(self, 'Information', 'Music player closes after 30 minutes')
             elif value == '45':
-                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',
+                                            QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
                 if mbox == QMessageBox.Yes:
-                    self.t = Timer(2700, self.exit)
-                    self.t.start()
+                    timerStart = Timer(2700, self.exit)
+                    timerStart.start()
                     QMessageBox.information(self, 'Information', 'Music player closes after 45 minutes')
             elif value == '60':
-                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',
+                                            QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
                 if mbox == QMessageBox.Yes:
-                    self.t = Timer(3600, self.exit)
-                    self.t.start()
+                    timerStart = Timer(3600, self.exit)
+                    timerStart.start()
                     QMessageBox.information(self, 'Information', 'Music player closes after 60 minutes')
             elif value == '120':
-                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
+                mbox = QMessageBox.question(self, 'Information!!!', 'Are you sure to exit?',
+                                            QMessageBox.Yes | QMessageBox.No | QMessageBox.No, QMessageBox.No)
                 if mbox == QMessageBox.Yes:
-                    self.t = Timer(7200, self.exit)
-                    self.t.start()
+                    timerStart = Timer(7200, self.exit)
+                    timerStart.start()
                     QMessageBox.information(self, 'Information', 'Music player closes after 120 minutes')
         except:
             QMessageBox.warning(self, 'Warning', 'System errors')
@@ -460,22 +465,16 @@ class Player(QWidget):
     def themesChange(self):
         global themes
         if themes == True:
-            self.setStyleSheet('background-color:#294B6B;')
-            self.progressBar.setStyleSheet(style.progressBarStyleDark())
-            self.volumeSlider.setStyleSheet(style.sliderStyleDark())
-            self.playList.setStyleSheet(style.listBoxStyleDark())
-            self.topGroupLayaout.setStyleSheet(style.groupBoxStyleDark())
-            self.combo.setStyleSheet('color:white;')
-            self.countDownLabel.setStyleSheet('color:white;')
+            styleCss = open('themes/qbreeze.css', 'r')
+            styleCss = styleCss.read()
+            self.setStyleSheet(styleCss)
             themes = False
         else:
-            self.setStyleSheet('background-color:#D0ECE7;')
-            self.progressBar.setStyleSheet(style.progressBarStyle())
-            self.volumeSlider.setStyleSheet(style.sliderStyle())
-            self.playList.setStyleSheet(style.listBoxStyle())
-            self.topGroupLayaout.setStyleSheet(style.groupBoxStyle())
-            self.combo.setStyleSheet('color:black;')
-            self.countDownLabel.setStyleSheet('color:black;')
+            styleCss = open('themes/qdarkgray.css', 'r')
+            styleCss = styleCss.read()
+            self.setStyleSheet(styleCss)
+            self.topGroupLayaout.setTitle("")
+            self.countDownLabel.setMaximumSize(QSize(46, 46))
             themes = True
 
 
@@ -485,9 +484,6 @@ def main():
     window.updateLabel()
     sys.exit(app.exec_())
 
+
 if __name__ == '__main__':
     main()
-
-
-
-
